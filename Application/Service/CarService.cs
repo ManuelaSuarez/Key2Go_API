@@ -96,11 +96,14 @@ namespace Application.Service
 
             return true;
         }
+
         public async Task<CarResponse?> Update(int id, CarRequest request)
         {
             var car = await _carRepository.GetByIdAsync(id);
             if (car == null)
+            {
                 return null;
+            }
 
             car.LicensePlate = request.LicensePlate;
             car.Brand = request.Brand;

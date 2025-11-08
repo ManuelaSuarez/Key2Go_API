@@ -1,6 +1,4 @@
-﻿
-
-using Contract.Car.Request;
+﻿using Contract.Car.Request;
 using Contract.Car.Response;
 
 namespace Application.Service

@@ -18,12 +18,14 @@ builder.Services.AddDbContext<Key2GoDbContext>(options => options.UseSqlServer(b
 #region Repositories
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<ICarRepository, CarRepository>();
+builder.Services.AddScoped<ITripRepository, TripRepository>();
 #endregion
 
 //inyeccion solo de Interfaces, no inyecciones concretas
 #region Services
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ICarService, CarService>();
+builder.Services.AddScoped<ITripService, TripService>();
 #endregion
 
 var app = builder.Build();

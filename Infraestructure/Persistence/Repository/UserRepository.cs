@@ -12,6 +12,12 @@ namespace Infraestructure.Persistence.Repository
             _context = context;
         }
 
+        public async Task<User?> AuthenticatorAsync(string email, string password)
+        {
+            return await _context.Users
+                .Include(u => u.Role)
+                .FirstOrDefaultAsync(u => u.Email == email && u.Password == password);
+        }
         public async Task<User?> GetByEmail(string email)
         {
             return await _context.Users

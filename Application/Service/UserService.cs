@@ -25,7 +25,8 @@ namespace Application.Service
                     Dni = u.Dni,
                     CompleteName = $"{u.Surname}, {u.Name}",
                     Email = u.Email,
-                    PhoneNumber = u.PhoneNumber
+                    PhoneNumber = u.PhoneNumber,
+                    RoleId = u.RoleId
                 })
                 .ToList();
             return listUsers;
@@ -39,7 +40,8 @@ namespace Application.Service
                         Dni = user.Dni,
                         CompleteName = $"{user.Surname}, {user.Name}",
                         Email = user.Email,
-                        PhoneNumber = user.PhoneNumber
+                        PhoneNumber = user.PhoneNumber,
+                        RoleId = user.RoleId
                     } : null;
 
             return response;
@@ -58,7 +60,8 @@ namespace Application.Service
                 Surname = request.Surname,
                 Email = request.Email,
                 Password = request.Password,
-                PhoneNumber = request.PhoneNumber
+                PhoneNumber = request.PhoneNumber,
+                RoleId = request.RoleId
             };
 
             user = await _userRepository.CreateAsync(user);  // Asigna el resultado
@@ -69,7 +72,8 @@ namespace Application.Service
                 Dni = user.Dni,
                 CompleteName = $"{user.Surname}, {user.Name}",
                 Email = user.Email,
-                PhoneNumber = user.PhoneNumber
+                PhoneNumber = user.PhoneNumber,
+                RoleId = user.RoleId
             };
         }
 
@@ -105,6 +109,7 @@ namespace Application.Service
             user.Email = request.Email;
             user.Password = request.Password;
             user.PhoneNumber = request.PhoneNumber;
+            user.RoleId = request.RoleId;
 
             user = await _userRepository.UpdateAsync(user);
 
@@ -114,7 +119,8 @@ namespace Application.Service
                 Dni = user.Dni,
                 CompleteName = $"{user.Surname}, {user.Name}",
                 Email = user.Email,
-                PhoneNumber = user.PhoneNumber
+                PhoneNumber = user.PhoneNumber,
+                RoleId = user.RoleId
             };
         }
 

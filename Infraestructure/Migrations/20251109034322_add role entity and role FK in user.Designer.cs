@@ -4,6 +4,7 @@ using Infraestructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infraestructure.Migrations
 {
     [DbContext(typeof(Key2GoDbContext))]
-    partial class Key2GoDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251109034322_add role entity and role FK in user")]
+    partial class addroleentityandroleFKinuser
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -73,23 +76,6 @@ namespace Infraestructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Roles");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Name = 1
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Name = 2
-                        },
-                        new
-                        {
-                            Id = 3,
-                            Name = 3
-                        });
                 });
 
             modelBuilder.Entity("Domain.Entity.Trip", b =>

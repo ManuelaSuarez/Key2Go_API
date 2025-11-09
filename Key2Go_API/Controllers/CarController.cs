@@ -2,12 +2,15 @@
 
 using Application.Service;
 using Contract.Car.Request;
+using Domain.Entity;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Presentation.Controllers
 {
     [Route("api/[Controller]")]
     [ApiController]
+    
     public class CarController : ControllerBase
     {
         private readonly ICarService _carService;
@@ -38,6 +41,7 @@ namespace Presentation.Controllers
             return Ok(response);
         }
         [HttpPost("register-car")]
+        [Authorize(Policy = nameof(RoleType.Admin))]
         public async Task<IActionResult> Create([FromBody] CarRequest request)
         {
             if (!ModelState.IsValid)

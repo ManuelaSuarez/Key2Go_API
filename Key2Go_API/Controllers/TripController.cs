@@ -1,7 +1,6 @@
 ﻿using Application.Service;
 using Contract.Trip.Request;
 using Contract.Trip.Response;
-using Contract.User.Request;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Presentation.Controllers

@@ -57,7 +57,9 @@ namespace Application.Service
                 StartDate = request.StartDate,
                 EndDate = request.EndDate,
                 FinalKm = request.FinalKm,
-                Status = (TripStatus)request.Status
+                Status = (TripStatus)request.Status,
+                UserId = request.UserId,
+                CarId = request.CarId
             };
 
             trip = await _tripRepository.CreateAsync(trip);
@@ -102,6 +104,8 @@ namespace Application.Service
             trip.EndDate = request.EndDate;
             trip.FinalKm = request.FinalKm;
             trip.Status = (TripStatus)request.Status;
+            trip.UserId = request.UserId;
+            trip.CarId = request.CarId;
 
             await _tripRepository.UpdateAsync(trip);
 

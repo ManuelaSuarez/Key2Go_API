@@ -3,6 +3,10 @@ using Contract.Payment.Request;
 using Contract.Payment.Response;
 using Domain.Entity;
 
+
+//metodo para calcular automaticamente el monto del pago
+//poder buscar un pago con el id del trip
+
 namespace Application.Service
 {
     public class PaymentService : IPaymentService

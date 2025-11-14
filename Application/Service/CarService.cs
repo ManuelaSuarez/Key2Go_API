@@ -5,6 +5,8 @@ using Contract.Car.Request;
 using Contract.Car.Response;
 using Domain.Entity;
 
+//Agregar validacion para ser si el CAR no tiene reservas dentro de una fecha especifica
+//Revisar metodo para mantenimiento automatico
 
 namespace Application.Service
 {

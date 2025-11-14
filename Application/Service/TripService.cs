@@ -103,7 +103,7 @@ namespace Application.Service
             return true;
         }
 
-        // a revisar si conviene manejarlo con un request de update o flotarlo
+        // a revisar si conviene manejarlo con un requestUpdate o flotarlo
         public async Task<TripResponse?> Update(int id, TripUpdate request)
         {
             var trip = await _tripRepository.GetByIdAsync(id);
@@ -116,6 +116,7 @@ namespace Application.Service
             trip.ReservationNumber = request.ReservationNumber;
             trip.StartDate = request.StartDate;
             trip.EndDate = request.EndDate;
+            trip.InitialKm = request.FinalKm;
             trip.FinalKm = request.FinalKm;
             trip.Status = (TripStatus)request.Status;
             trip.UserId = request.UserId;

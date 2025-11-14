@@ -19,7 +19,6 @@ namespace Application.Service
 
         public async Task<List<TripResponse>> GetAll()
         {
-            // trips o response? en user es users y en car response...
             var response = await _tripRepository.GetAllAsync();
             var listTrips = response
                 .Select(trip => new TripResponse
@@ -90,7 +89,6 @@ namespace Application.Service
 
         public async Task<bool> Delete(int id)
         {
-            // por qué entity y no trip?
             var entity = await _tripRepository.GetByIdAsync(id);
 
             if (entity == null)

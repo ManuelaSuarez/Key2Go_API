@@ -115,6 +115,18 @@ namespace Presentation.Controllers
             return Ok("Viaje finalizado");
         }
 
+        [HttpGet("AllPendingTrip")]
+        public async Task<ActionResult<TripResponse>> GetAllPending()
+        {
+            var response = await _tripService.GetByStatus(1);
+
+            if (!response.Any())
+            {
+                return NotFound("No Trips Found");
+            }
+            return Ok(response);
+        }
+
         [HttpGet("AllActiveTrip")]
         public async Task<ActionResult<TripResponse>> GetAllActive()
         {
@@ -127,6 +139,28 @@ namespace Presentation.Controllers
             return Ok(response);
         }
 
-        //agregar para cada estado
+        [HttpGet("AllCancelledTrip")]
+        public async Task<ActionResult<TripResponse>> GetAllCancelled()
+        {
+            var response = await _tripService.GetByStatus(3);
+
+            if (!response.Any())
+            {
+                return NotFound("No Trips Found");
+            }
+            return Ok(response);
+        }
+
+        [HttpGet("AllFinishedTrip")]
+        public async Task<ActionResult<TripResponse>> GetAllFinished()
+        {
+            var response = await _tripService.GetByStatus(4);
+
+            if (!response.Any())
+            {
+                return NotFound("No Trips Found");
+            }
+            return Ok(response);
+        }
     }
 }

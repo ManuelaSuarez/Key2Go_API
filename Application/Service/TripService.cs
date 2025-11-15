@@ -10,11 +10,13 @@ namespace Application.Service
     {
         private readonly ITripRepository _tripRepository;
         private readonly ICarRepository _carRepository;
+        private readonly IPaymentRepository _paymentRepository;
 
-        public TripService(ITripRepository tripRepository, ICarRepository carRepository)
+        public TripService(ITripRepository tripRepository, ICarRepository carRepository, IPaymentRepository paymentRepository)
         {
             _tripRepository = tripRepository;
             _carRepository = carRepository;
+            _paymentRepository = paymentRepository;
         }
 
         public async Task<List<TripResponse>> GetAll()
@@ -58,9 +60,9 @@ namespace Application.Service
         {
             var car = await _carRepository.GetByIdAsync(request.CarId);
             if (car == null)
-                throw new Exception("El auto no existe");
+                throw new Exception("The car does not exist.");
 
-            car.Status = CarStatus.Reserved;                  // ver si modificar la disponibilidad del auto en la creacion o al iniciar el trip
+            car.Status = CarStatus.Reserved; // ver si modificar la disponibilidad del auto en la creacion o al iniciar el trip
             await _carRepository.UpdateAsync(car);
 
             var trip = new Trip
@@ -75,6 +77,15 @@ namespace Application.Service
             };
 
             trip = await _tripRepository.CreateAsync(trip);
+
+            var amount = CalculateAmount(trip, car);
+            var payment = new Payment
+            {
+                PaymentDate = DateTime.UtcNow,
+                TotalAmount = amount,
+                Method = (PaymentMethod)request.PaymentMethod,
+                TripId = trip.Id
+            };
 
             return new TripResponse
             {
@@ -113,16 +124,44 @@ namespace Application.Service
                 return null;
             }
 
+            var oldStartDate = trip.StartDate;
+            var oldEndDate = trip.EndDate;
+            var oldCarId = trip.CarId;
+
             trip.ReservationNumber = request.ReservationNumber;
             trip.StartDate = request.StartDate;
             trip.EndDate = request.EndDate;
-            trip.InitialKm = request.FinalKm;
+            trip.InitialKm = request.InitialKm;
             trip.FinalKm = request.FinalKm;
             trip.Status = (TripStatus)request.Status;
             trip.UserId = request.UserId;
             trip.CarId = request.CarId;
-
+                
             await _tripRepository.UpdateAsync(trip);
+
+            bool tripDurationChanged =
+                oldStartDate != trip.StartDate ||
+                oldEndDate != trip.EndDate;
+
+            bool carChanged = oldCarId != trip.CarId;
+
+            if (tripDurationChanged || carChanged)
+            {
+                var payment = await _paymentRepository.GetByTripIdAsync(trip.Id);
+                
+                if (payment != null) // se supone q nunca va a ser null pero puede fallar la creación del payment o alguien lo puede borrar manualmente
+                {
+                    var car = await _carRepository.GetByIdAsync(trip.CarId)
+                      ?? throw new Exception("El auto asociado al Trip no existe");
+
+                    payment.PaymentDate = DateTime.UtcNow;
+                    payment.TotalAmount = CalculateAmount(trip, car);
+                    payment.Method = (PaymentMethod)request.PaymentMethod;
+                
+                    await _paymentRepository.UpdateAsync(payment);
+                }
+            }
+
 
             return new TripResponse
             {
@@ -180,6 +219,7 @@ namespace Application.Service
 
             return true;
         }
+
         public async Task<bool> FinishTrip(int id, int finalKm)
         {
             var trip = await _tripRepository.GetByIdAsync(id);
@@ -201,7 +241,7 @@ namespace Application.Service
             return true;
         }
 
-    public async Task<List<TripResponse>> GetByStatus(int status)
+        public async Task<List<TripResponse>> GetByStatus(int status)
         {
             var response = await _tripRepository.GetByStatusAsync(status);
             var listTrips = response
@@ -218,6 +258,18 @@ namespace Application.Service
                 })
                 .ToList();
             return listTrips;
+        }
+
+        private decimal CalculateAmount (Trip trip, Car car)
+        {
+            var tripDays = (trip.EndDate - trip.StartDate).Days;
+
+            if (tripDays <= 0)
+            {
+                tripDays = 1;
+            }
+
+            return tripDays * car.DailyPriceUsd;
         }
     }
 }

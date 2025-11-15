@@ -12,6 +12,7 @@ namespace Contract.Trip.Request
         public int? InitialKm { get; set; }
         public int? FinalKm { get; set; }
         public int Status { get; set; }
+        public int PaymentMethod { get; set; }
         public int UserId { get; set; }
         public int CarId { get; set; }
     }

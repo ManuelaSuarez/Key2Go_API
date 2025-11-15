@@ -4,7 +4,7 @@
     {
         public int PaymentId { get; set; }
         public DateTime PaymentDate { get; set; }
-        public int TotalAmount { get; set; }
+        public decimal TotalAmount { get; set; }
         public PaymentMethod Method { get; set; }
 
         // FK

@@ -24,6 +24,14 @@ namespace Infraestructure.Persistence
                 new Role { Id = 2, Name = RoleType.Admin },
                 new Role { Id = 3, Name = RoleType.SuperAdmin }
             );
+
+            // --- Cascade delete para Payment ---
+            //modelBuilder.Entity<Trip>()
+            //    .HasOne(t => t.Payment)
+            //    .WithOne(p => p.Trip)
+            //    .HasForeignKey<Payment>(p => p.TripId)
+            //    .OnDelete(DeleteBehavior.Cascade);
         }
+    }
     }
 }

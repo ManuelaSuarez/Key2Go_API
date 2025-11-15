@@ -7,8 +7,9 @@ namespace Application.Service
     {
         Task<List<PaymentResponse>> GetAll();
         Task<PaymentResponse?> GetById(int id);
-        Task<PaymentResponse?> Create(PaymentRequest request);
+        //Task<PaymentResponse?> Create(PaymentRequest request);
         Task<bool> Delete(int id);
-        Task<PaymentResponse?> Update(int id, PaymentRequest request);
+        //Task<PaymentResponse?> Update(int id, PaymentRequest request);
+        Task<PaymentResponse?> GetByTripIdAsync(int tripId);
     }
 }

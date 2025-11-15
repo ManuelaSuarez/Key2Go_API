@@ -9,6 +9,8 @@
         public int? InitialKm { get; set; }
         public int? FinalKm { get; set; }
         public TripStatus Status { get; set; }
+        // se agrega xq sino EF no puede inferir que es 1:1, asumirá 1:n
+        // public Payment Payment { get; set; }
 
         //FK
         public int UserId { get; set; }

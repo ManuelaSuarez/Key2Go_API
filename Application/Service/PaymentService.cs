@@ -3,10 +3,6 @@ using Contract.Payment.Request;
 using Contract.Payment.Response;
 using Domain.Entity;
 
-
-//metodo para calcular automaticamente el monto del pago
-//poder buscar un pago con el id del trip
-
 namespace Application.Service
 {
     public class PaymentService : IPaymentService
@@ -49,26 +45,26 @@ namespace Application.Service
             return response;
         }
 
-        public async Task<PaymentResponse?> Create(PaymentRequest request)
-        {
-            var payment = new Payment
-            {
-                TotalAmount = request.TotalAmount,
-                Method = (PaymentMethod)request.Method,
-                TripId = request.TripId
-            };
+        //public async Task<PaymentResponse?> Create(PaymentRequest request)
+        //{
+        //    var payment = new Payment
+        //    {
+        //        TotalAmount = request.TotalAmount,
+        //        Method = (PaymentMethod)request.Method,
+        //        TripId = request.TripId
+        //    };
 
-            payment = await _paymentRepository.CreateAsync(payment);
+        //    payment = await _paymentRepository.CreateAsync(payment);
 
-            return new PaymentResponse
-            {
-                Id = payment.Id,
-                PaymentId = payment.PaymentId,
-                PaymentDate = payment.PaymentDate,
-                TotalAmount = payment.TotalAmount,
-                Method = (int)payment.Method
-            };
-        }
+        //    return new PaymentResponse
+        //    {
+        //        Id = payment.Id,
+        //        PaymentId = payment.PaymentId,
+        //        PaymentDate = payment.PaymentDate,
+        //        TotalAmount = payment.TotalAmount,
+        //        Method = (int)payment.Method
+        //    };
+        //}
 
         public async Task<bool> Delete(int id)
         {
@@ -84,22 +80,36 @@ namespace Application.Service
             return true;
         }
 
-        public async Task<PaymentResponse?> Update(int id, PaymentRequest request)
+        //public async Task<PaymentResponse?> Update(int id, PaymentRequest request)
+        //{
+        //    var payment = await _paymentRepository.GetByIdAsync(id);
+
+        //    if (payment == null)
+        //    {
+        //        return null;
+        //    }
+
+        //    payment.TotalAmount = request.TotalAmount;
+        //    payment.Method = (PaymentMethod)request.Method;
+        //    payment.TripId = request.TripId;
+
+        //    await _paymentRepository.UpdateAsync(payment);
+
+        //    return new PaymentResponse
+        //    {
+        //        Id = payment.Id,
+        //        PaymentId = payment.PaymentId,
+        //        PaymentDate = payment.PaymentDate,
+        //        TotalAmount = payment.TotalAmount,
+        //        Method = (int)payment.Method
+        //    };
+        //}
+
+        public async Task<PaymentResponse?> GetByTripIdAsync(int tripId) // HACE FALTA ACÁ TMB? ESTÁ EN EL REPO
         {
-            var payment = await _paymentRepository.GetByIdAsync(id);
+            var payment = await _paymentRepository.GetByTripIdAsync(tripId);
 
-            if (payment == null)
-            {
-                return null;
-            }
-
-            payment.TotalAmount = request.TotalAmount;
-            payment.Method = (PaymentMethod)request.Method;
-            payment.TripId = request.TripId;
-
-            await _paymentRepository.UpdateAsync(payment);
-
-            return new PaymentResponse
+            return payment == null ? null : new PaymentResponse
             {
                 Id = payment.Id,
                 PaymentId = payment.PaymentId,

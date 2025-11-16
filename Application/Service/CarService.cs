@@ -1,6 +1,4 @@
-﻿
-
-using Application.Abstraction;
+﻿using Application.Abstraction;
 using Application.Abstraction.ExternalService;
 using Contract.Car.Request;
 using Contract.Car.Response;

@@ -8,10 +8,14 @@ namespace Application.Service
     public class PaymentService : IPaymentService
     {
         private readonly IPaymentRepository _paymentRepository;
+        private readonly ITripRepository _tripRepository;
+        private readonly ICarRepository _carRepository;
 
-        public PaymentService(IPaymentRepository paymentRepository)
+        public PaymentService(IPaymentRepository paymentRepository, ITripRepository tripRepository, ICarRepository carRepository)
         {
             _paymentRepository = paymentRepository;
+            _tripRepository = tripRepository;
+            _carRepository = carRepository;
         }
 
         public async Task<List<PaymentResponse>> GetAll()
@@ -43,6 +47,96 @@ namespace Application.Service
                     } : null;
 
             return response;
+        }
+
+        public async Task<PaymentResponse?> GetByTripIdAsync(int tripId)
+        {
+            var payment = await _paymentRepository.GetByTripIdAsync(tripId);
+
+            return payment == null ? null : new PaymentResponse
+            {
+                Id = payment.Id,
+                PaymentId = payment.PaymentId,
+                PaymentDate = payment.PaymentDate,
+                TotalAmount = payment.TotalAmount,
+                Method = (int)payment.Method
+            };
+        }
+
+        // por que no devuelve <PaymentResponse?> NO DEBERÍA IR EN EL CONTROLLER PORQ NO QUEREMOS Q SE CREE UN PAGO DE LA NADA
+        public async Task Create(int tripId, PaymentMethod method)
+        {
+            var trip = await _tripRepository.GetByIdAsync(tripId)
+                ?? throw new Exception("Trip not found.");
+
+            if (!Enum.IsDefined(typeof(PaymentMethod), method))
+                throw new Exception("Payment method not valid.");
+
+            var existingPayment = await _paymentRepository.GetByTripIdAsync(trip.Id);
+            if (existingPayment != null)
+                throw new Exception("The trip already has a payment.");
+
+            var car = await _carRepository.GetByIdAsync(trip.CarId)
+                ?? throw new Exception("Car not found.");
+
+            var amount = CalculateAmount(trip, car);
+
+            var payment = new Payment
+            {
+                PaymentDate = DateTime.UtcNow,
+                TotalAmount = amount,
+                Method = method,
+                TripId = trip.Id
+            };
+
+            await _paymentRepository.CreateAsync(payment);
+        }
+
+        public async Task<PaymentResponse?> Update(int id, PaymentRequest request)
+        {
+            var payment = await _paymentRepository.GetByIdAsync(id);
+
+            if (payment == null)
+            {
+                return null;
+            }
+
+            payment.Method = (PaymentMethod)request.Method;
+
+            await _paymentRepository.UpdateAsync(payment);
+
+            return new PaymentResponse
+            {
+                Id = payment.Id,
+                PaymentId = payment.PaymentId,
+                PaymentDate = payment.PaymentDate,
+                TotalAmount = payment.TotalAmount,
+                Method = (int)payment.Method
+            };
+        }
+
+        // EL UPDATE SI DEBERÍA IR EN EL CONTROLLER PERO SOLO PARA EDITAR EL METODO DE PAGO? YA QUE EL MONTO DEPENDE DE LOS DÍAS Y EL AUTO
+        // QUE SE ACTUALIZA CUANDO SI SE ACTUALIZA EN LA RESERVA
+        // Serían dos update distintos, uno que actualiza las cosas normales del payment y el metodo de pago y otro que actualiza el monto total por trip
+        public async Task UpdateForTrip(int tripId, PaymentMethod method)
+        {
+
+            var trip = await _tripRepository.GetByIdAsync(tripId)
+                ?? throw new Exception("Trip not found");
+
+            var payment = await _paymentRepository.GetByTripIdAsync(trip.Id)
+                ?? throw new Exception("Payment not found");
+
+            var car = await _carRepository.GetByIdAsync(trip.CarId)
+                ?? throw new Exception("Car not found");
+
+            var amount = CalculateAmount(trip, car);
+
+            payment.PaymentDate = DateTime.UtcNow;
+            payment.TotalAmount = CalculateAmount(trip, car);
+            payment.Method = method;
+
+            await _paymentRepository.UpdateAsync(payment);
         }
 
         //public async Task<PaymentResponse?> Create(PaymentRequest request)
@@ -80,43 +174,16 @@ namespace Application.Service
             return true;
         }
 
-        //public async Task<PaymentResponse?> Update(int id, PaymentRequest request)
-        //{
-        //    var payment = await _paymentRepository.GetByIdAsync(id);
-
-        //    if (payment == null)
-        //    {
-        //        return null;
-        //    }
-
-        //    payment.TotalAmount = request.TotalAmount;
-        //    payment.Method = (PaymentMethod)request.Method;
-        //    payment.TripId = request.TripId;
-
-        //    await _paymentRepository.UpdateAsync(payment);
-
-        //    return new PaymentResponse
-        //    {
-        //        Id = payment.Id,
-        //        PaymentId = payment.PaymentId,
-        //        PaymentDate = payment.PaymentDate,
-        //        TotalAmount = payment.TotalAmount,
-        //        Method = (int)payment.Method
-        //    };
-        //}
-
-        public async Task<PaymentResponse?> GetByTripIdAsync(int tripId) // HACE FALTA ACÁ TMB? ESTÁ EN EL REPO
+        private decimal CalculateAmount(Trip trip, Car car)
         {
-            var payment = await _paymentRepository.GetByTripIdAsync(tripId);
+            var tripDays = (trip.EndDate - trip.StartDate).Days;
 
-            return payment == null ? null : new PaymentResponse
+            if (tripDays <= 0)
             {
-                Id = payment.Id,
-                PaymentId = payment.PaymentId,
-                PaymentDate = payment.PaymentDate,
-                TotalAmount = payment.TotalAmount,
-                Method = (int)payment.Method
-            };
+                tripDays = 1;
+            }
+
+            return tripDays * car.DailyPriceUsd;
         }
     }
 }

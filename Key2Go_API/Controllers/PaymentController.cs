@@ -43,32 +43,15 @@ namespace Presentation.Controllers
             return Ok(response);
         }
 
-        [HttpPost("register-payment")]
-        public async Task<IActionResult> Create([FromBody] PaymentRequest request)
+        [HttpGet("by-trip/{tripId:int}")]
+        public async Task<ActionResult<PaymentResponse>> GetByTripId([FromRoute] int tripId)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
+            var response = await _paymentService.GetByTripIdAsync(tripId);
 
-            var result = await _paymentService.Create(request);
+            if (response == null)
+                return NotFound("No payment associated with this trip");
 
-            if (result == null)
-            {
-                return BadRequest("Could not create payment");
-            }
-
-            return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
-        }
-
-        [HttpDelete("{id:int}")]
-        public async Task<IActionResult> Delete(int id)
-        {
-            var result = await _paymentService.Delete(id);
-            if (!result)
-                return NotFound("Payment not found");
-
-            return NoContent();
+            return Ok(response);
         }
 
         [HttpPut("{id:int}")]
@@ -83,8 +66,36 @@ namespace Presentation.Controllers
             {
                 return NotFound("Payment not found");
             }
-                
+
             return Ok(updated);
+        }
+
+        //[HttpPost("register-payment")]
+        //public async Task<IActionResult> Create([FromBody] PaymentRequest request)
+        //{
+        //    if (!ModelState.IsValid)
+        //    {
+        //        return BadRequest(ModelState);
+        //    }
+
+        //    var result = await _paymentService.Create(request);
+
+        //    if (result == null)
+        //    {
+        //        return BadRequest("Could not create payment");
+        //    }
+
+        //    return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
+        //}
+
+        [HttpDelete("{id:int}")]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var result = await _paymentService.Delete(id);
+            if (!result)
+                return NotFound("Payment not found");
+
+            return NoContent();
         }
     }
 }

@@ -10,13 +10,13 @@ namespace Application.Service
     {
         private readonly ITripRepository _tripRepository;
         private readonly ICarRepository _carRepository;
-        private readonly IPaymentRepository _paymentRepository;
+        private readonly IPaymentService _paymentService;
 
-        public TripService(ITripRepository tripRepository, ICarRepository carRepository, IPaymentRepository paymentRepository)
+        public TripService(ITripRepository tripRepository, ICarRepository carRepository, IPaymentService paymentService)
         {
             _tripRepository = tripRepository;
             _carRepository = carRepository;
-            _paymentRepository = paymentRepository;
+            _paymentService = paymentService;
         }
 
         public async Task<List<TripResponse>> GetAll()
@@ -71,21 +71,14 @@ namespace Application.Service
                 CreationDate = DateTime.UtcNow,
                 StartDate = request.StartDate,
                 EndDate = request.EndDate,
-                Status = (TripStatus)request.Status,
+                Status = (TripStatus)request.Status, // Cambiarlo para que solo sea Pending?
                 UserId = request.UserId,
                 CarId = request.CarId
             };
 
             trip = await _tripRepository.CreateAsync(trip);
 
-            var amount = CalculateAmount(trip, car);
-            var payment = new Payment
-            {
-                PaymentDate = DateTime.UtcNow,
-                TotalAmount = amount,
-                Method = (PaymentMethod)request.PaymentMethod,
-                TripId = trip.Id
-            };
+            await _paymentService.Create(trip.Id, (PaymentMethod)request.PaymentMethod);
 
             return new TripResponse
             {
@@ -147,21 +140,8 @@ namespace Application.Service
 
             if (tripDurationChanged || carChanged)
             {
-                var payment = await _paymentRepository.GetByTripIdAsync(trip.Id);
-                
-                if (payment != null) // se supone q nunca va a ser null pero puede fallar la creación del payment o alguien lo puede borrar manualmente
-                {
-                    var car = await _carRepository.GetByIdAsync(trip.CarId)
-                      ?? throw new Exception("El auto asociado al Trip no existe");
-
-                    payment.PaymentDate = DateTime.UtcNow;
-                    payment.TotalAmount = CalculateAmount(trip, car);
-                    payment.Method = (PaymentMethod)request.PaymentMethod;
-                
-                    await _paymentRepository.UpdateAsync(payment);
-                }
+                await _paymentService.UpdateForTrip(trip.Id, (PaymentMethod)request.PaymentMethod);
             }
-
 
             return new TripResponse
             {
@@ -258,18 +238,6 @@ namespace Application.Service
                 })
                 .ToList();
             return listTrips;
-        }
-
-        private decimal CalculateAmount (Trip trip, Car car)
-        {
-            var tripDays = (trip.EndDate - trip.StartDate).Days;
-
-            if (tripDays <= 0)
-            {
-                tripDays = 1;
-            }
-
-            return tripDays * car.DailyPriceUsd;
         }
     }
 }

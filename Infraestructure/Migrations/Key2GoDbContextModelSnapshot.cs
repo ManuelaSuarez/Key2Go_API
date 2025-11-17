@@ -56,7 +56,7 @@ namespace Infraestructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Cars");
+                    b.ToTable("Cars", (string)null);
 
                     b.HasData(
                         new
@@ -122,7 +122,7 @@ namespace Infraestructure.Migrations
                     b.HasIndex("TripId")
                         .IsUnique();
 
-                    b.ToTable("Payments");
+                    b.ToTable("Payments", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Entity.Role", b =>
@@ -138,7 +138,7 @@ namespace Infraestructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Roles");
+                    b.ToTable("Roles", (string)null);
 
                     b.HasData(
                         new
@@ -199,7 +199,7 @@ namespace Infraestructure.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Trips");
+                    b.ToTable("Trips", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Entity.User", b =>
@@ -241,7 +241,7 @@ namespace Infraestructure.Migrations
 
                     b.HasIndex("RoleId");
 
-                    b.ToTable("Users");
+                    b.ToTable("Users", (string)null);
 
                     b.HasData(
                         new

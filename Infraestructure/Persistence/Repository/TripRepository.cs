@@ -15,7 +15,14 @@ namespace Infraestructure.Persistence.Repository
         public async Task<List<Trip>> GetByStatusAsync(int status)
         {
             return await _context.Trips
-                .Where(u => (int)u.Status == status)
+                .Where(t => (int)t.Status == status)
+                .ToListAsync();
+        }
+
+        public async Task<List<Trip>> GetByCarIdAsync(int carId)
+        {
+            return await _context.Trips
+                .Where(t => (int)t.CarId == carId)
                 .ToListAsync();
         }
     }

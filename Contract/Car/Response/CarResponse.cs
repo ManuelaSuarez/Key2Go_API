@@ -11,7 +11,6 @@ namespace Contract.Car.Response
         public int Km { get; set; }
         public decimal DailyPriceUsd { get; set; }
         public decimal DailyPriceArs { get; set; }
-
         public int Status { get; set; }
     }
 }

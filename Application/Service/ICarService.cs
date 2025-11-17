@@ -10,5 +10,6 @@ namespace Application.Service
         Task<CarResponse?> Create(CarRequest request);
         Task<bool> Delete(int id);
         Task<CarResponse?> Update(int id, CarRequest request);
+        Task<bool> IsCarAvailable(int id, DateTime startDate, DateTime endDate, int? currentTripId = null);
     }
 }

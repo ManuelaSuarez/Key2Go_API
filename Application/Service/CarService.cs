@@ -4,18 +4,17 @@ using Contract.Car.Request;
 using Contract.Car.Response;
 using Domain.Entity;
 
-//Agregar validacion para ser si el CAR no tiene reservas dentro de una fecha especifica
-//Revisar metodo para mantenimiento automatico
-
 namespace Application.Service
 {
     public class CarService : ICarService
     {
         private readonly ICarRepository _carRepository;
+        private readonly ITripRepository _tripRepository;
         private readonly IUsdArsRateService _usdArsRateService;
-        public CarService(ICarRepository carRepository, IUsdArsRateService usdArsRateService)
+        public CarService(ICarRepository carRepository, ITripRepository tripRepository, IUsdArsRateService usdArsRateService)
         {
             _carRepository = carRepository;
+            _tripRepository = tripRepository;
             _usdArsRateService = usdArsRateService;
         }
 
@@ -143,6 +142,31 @@ namespace Application.Service
                 DailyPriceUsd = car.DailyPriceUsd,
                 Status = (int)car.Status
             };
+        }
+    
+        public async Task<bool> IsCarAvailable(int id, DateTime startDate, DateTime endDate, int? currentTripId = null)
+        {
+            var car = await _carRepository.GetByIdAsync(id);
+            if (car == null)
+                return false;
+
+            var trips = await _tripRepository.GetByCarIdAsync(id);
+
+            foreach (var trip in trips)
+            {
+                if (currentTripId.HasValue && trip.Id == currentTripId.Value)
+                    continue; // Ignorar la reserva que estamos modificando
+
+                if (trip.Status == TripStatus.Cancelled)
+                    continue; // Ignorar las reservas canceladas
+
+                bool overlap = startDate < trip.EndDate && endDate > trip.StartDate;
+                
+                if (overlap)
+                        return false;
+            }
+
+            return true;
         }
     }
 }

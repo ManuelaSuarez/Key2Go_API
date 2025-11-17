@@ -3,6 +3,7 @@ using Application.Service;
 using Contract.Trip.Request;
 using Contract.Trip.Response;
 using Domain.Entity;
+using System.Net.NetworkInformation;
 
 namespace Application.Service
 {
@@ -11,13 +12,15 @@ namespace Application.Service
         private readonly ITripRepository _tripRepository;
         private readonly ICarRepository _carRepository;
         private readonly IUserRepository _userRepository;
+        private readonly ICarService _carService;
         private readonly IPaymentService _paymentService;
 
-        public TripService(ITripRepository tripRepository, ICarRepository carRepository, IUserRepository userRepository, IPaymentService paymentService)
+        public TripService(ITripRepository tripRepository, ICarRepository carRepository, IUserRepository userRepository, ICarService carService, IPaymentService paymentService)
         {
             _tripRepository = tripRepository;
             _carRepository = carRepository;
             _userRepository = userRepository;
+            _carService = carService;
             _paymentService = paymentService;
         }
 
@@ -34,7 +37,9 @@ namespace Application.Service
                     EndDate = trip.EndDate,
                     InitialKm = trip.InitialKm,
                     FinalKm = trip.FinalKm,
-                    Status = (int)trip.Status
+                    Status = (int)trip.Status,
+                    UserId = trip.UserId,
+                    CarId = trip.CarId
                 })
                 .ToList();
             return listTrips;
@@ -52,7 +57,9 @@ namespace Application.Service
                         EndDate = trip.EndDate,
                         InitialKm = trip.InitialKm,
                         FinalKm = trip.FinalKm,
-                        Status = (int)trip.Status
+                        Status = (int)trip.Status,
+                        UserId = trip.UserId,
+                        CarId = trip.CarId
                     } : null;
 
             return response;
@@ -60,16 +67,25 @@ namespace Application.Service
 
         public async Task<TripResponse?> Create(TripRequest request)
         {
-            var car = await _carRepository.GetByIdAsync(request.CarId);
-            if (car == null)
-                throw new Exception("The car does not exist.");
-
-            car.Status = CarStatus.Reserved; // ver si modificar la disponibilidad del auto en la creacion o al iniciar el trip
-            await _carRepository.UpdateAsync(car);
+            if (request.StartDate > request.EndDate)
+                throw new Exception("End date must be equal or greater than start date.");
 
             var user = await _userRepository.GetByIdAsync(request.UserId);
             if (user == null)
                 throw new Exception("The user does not exist.");
+
+            var car = await _carRepository.GetByIdAsync(request.CarId);
+            if (car == null)
+                throw new Exception("The car does not exist.");
+
+            bool isAvailable = await _carService.IsCarAvailable(
+                request.CarId,
+                request.StartDate,
+                request.EndDate
+            );
+
+            if (!isAvailable)
+                throw new Exception("The selected car is not available for the selected dates.");
 
             var trip = new Trip
             {
@@ -77,7 +93,7 @@ namespace Application.Service
                 CreationDate = DateTime.UtcNow,
                 StartDate = request.StartDate,
                 EndDate = request.EndDate,
-                Status = (TripStatus)request.Status, // Cambiarlo para que solo sea Pending?
+                Status = TripStatus.Pending,
                 UserId = request.UserId,
                 CarId = request.CarId
             };
@@ -98,7 +114,9 @@ namespace Application.Service
                 EndDate = trip.EndDate,
                 InitialKm = trip.InitialKm,
                 FinalKm = trip.FinalKm,
-                Status = (int)trip.Status
+                Status = (int)trip.Status,
+                UserId = trip.UserId,
+                CarId = trip.CarId
             };
         }
 
@@ -116,7 +134,6 @@ namespace Application.Service
             return true;
         }
 
-        // a revisar si conviene manejarlo con un requestUpdate o flotarlo
         public async Task<TripResponse?> Update(int id, TripUpdate request)
         {
             var trip = await _tripRepository.GetByIdAsync(id);
@@ -126,28 +143,52 @@ namespace Application.Service
                 return null;
             }
 
-            var oldStartDate = trip.StartDate;
-            var oldEndDate = trip.EndDate;
-            var oldCarId = trip.CarId;
+            var tripStatus = (int)trip.Status;
+
+            if (tripStatus != 1)
+            {
+                throw new Exception("You can only edit pending trips.");
+            }
+
+            if (request.StartDate > request.EndDate)
+                throw new Exception("End date must be equal or greater than start date.");
+
+            var user = await _userRepository.GetByIdAsync(request.UserId);
+            if (user == null)
+                throw new Exception("The user does not exist.");
+
+            var car = await _carRepository.GetByIdAsync(request.CarId);
+            if (car == null)
+                throw new Exception("The car does not exist.");
+
+            bool datesChanged =
+                trip.StartDate != request.StartDate ||
+                trip.EndDate != request.EndDate;
+
+            bool carChanged = trip.CarId != request.CarId;
+
+            if (datesChanged || carChanged)
+            {
+                bool available = await _carService.IsCarAvailable(
+                    request.CarId,
+                    request.StartDate,
+                    request.EndDate,
+                    currentTripId: trip.Id
+                );
+
+                if (!available)
+                    throw new Exception("The selected car is not available for the selected dates.");
+            }
 
             trip.ReservationNumber = request.ReservationNumber;
             trip.StartDate = request.StartDate;
             trip.EndDate = request.EndDate;
-            trip.InitialKm = request.InitialKm;
-            trip.FinalKm = request.FinalKm;
-            trip.Status = (TripStatus)request.Status;
             trip.UserId = request.UserId;
             trip.CarId = request.CarId;
                 
             await _tripRepository.UpdateAsync(trip);
 
-            bool tripDurationChanged =
-                oldStartDate != trip.StartDate ||
-                oldEndDate != trip.EndDate;
-
-            bool carChanged = oldCarId != trip.CarId;
-
-            if (tripDurationChanged || carChanged)
+            if (datesChanged || carChanged)
             {
                 await _paymentService.UpdateForTrip(trip.Id);
             }
@@ -161,7 +202,9 @@ namespace Application.Service
                 EndDate = trip.EndDate,
                 InitialKm = trip.InitialKm,
                 FinalKm = trip.FinalKm,
-                Status = (int)trip.Status
+                Status = (int)trip.Status,
+                UserId = trip.UserId,
+                CarId = trip.CarId
             };
         }
 
@@ -243,7 +286,9 @@ namespace Application.Service
                     EndDate = t.EndDate,
                     InitialKm = t.InitialKm,
                     FinalKm = t.FinalKm,
-                    Status = (int)t.Status
+                    Status = (int)t.Status,
+                    UserId = t.UserId,
+                    CarId = t.CarId
                 })
                 .ToList();
             return listTrips;

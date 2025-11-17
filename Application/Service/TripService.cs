@@ -3,6 +3,7 @@ using Application.Service;
 using Contract.Trip.Request;
 using Contract.Trip.Response;
 using Domain.Entity;
+using System.Net.NetworkInformation;
 
 namespace Application.Service
 {
@@ -133,12 +134,18 @@ namespace Application.Service
             return true;
         }
 
-        // a revisar si conviene manejarlo con un requestUpdate o flotarlo
         public async Task<TripResponse?> Update(int id, TripUpdate request)
         {
             var trip = await _tripRepository.GetByIdAsync(id);
 
             if (trip == null)
+            {
+                return null;
+            }
+
+            var tripStatus = (int)trip.Status;
+
+            if (tripStatus != 1)
             {
                 return null;
             }
@@ -176,9 +183,6 @@ namespace Application.Service
             trip.ReservationNumber = request.ReservationNumber;
             trip.StartDate = request.StartDate;
             trip.EndDate = request.EndDate;
-            trip.InitialKm = request.InitialKm;
-            trip.FinalKm = request.FinalKm;
-            trip.Status = (TripStatus)request.Status;
             trip.UserId = request.UserId;
             trip.CarId = request.CarId;
                 

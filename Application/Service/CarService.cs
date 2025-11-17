@@ -148,11 +148,7 @@ namespace Application.Service
         {
             var car = await _carRepository.GetByIdAsync(id);
             if (car == null)
-                return false; // Deberíamos especificar un mensaje de error particular para saber por qué no está disponible el car
-                                // Supongo q no porque no va a estar en el controller
-
-            if (car.Status == CarStatus.UnderMantenance)
-                return false; // Deberíamos especificar un mensaje de error particular para saber por qué no está disponible el car
+                return false;
 
             var trips = await _tripRepository.GetByCarIdAsync(id);
 

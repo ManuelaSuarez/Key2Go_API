@@ -14,7 +14,6 @@
     public enum CarStatus
     {
         Available = 1,
-        InUse = 2,
-        UnderMantenance = 3
+        InUse = 2
     }
 }

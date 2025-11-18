@@ -23,5 +23,10 @@ namespace Infraestructure.Persistence.Repository
             return await _context.Users
                 .FirstOrDefaultAsync(u => u.Email == email);
         }
+        public async Task<User?> GetByDni(string dni)
+        {
+            return await _context.Users
+                .FirstOrDefaultAsync(u => u.Dni == dni);
+        }
     }
 }

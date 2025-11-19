@@ -39,11 +39,11 @@ namespace Presentation.Controllers
 
         [HttpGet("my/{id}")]
         [Authorize(Policy = nameof(RoleType.User))]
-        public async Task<ActionResult<TripResponse>> GetMyTripbyId([FromRoute] int tripId)
+        public async Task<ActionResult<TripResponse>> GetMyTripbyId([FromRoute] int id)
         {
             var currentUserId = GetCurrentUserId();
 
-            var response = await _tripService.GetByUserId(tripId, currentUserId);
+            var response = await _tripService.GetByUserId(id, currentUserId);
 
             if (response == null)
             {

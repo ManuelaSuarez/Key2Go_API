@@ -1,5 +1,6 @@
 ﻿using Application.Abstraction;
 using Application.Abstraction.ExternalService;
+using Application.Service.Helpers.Normalitazion;
 using Application.Service.Helpers.Validations;
 using Contract.Car.Request;
 using Contract.Car.Response;
@@ -106,9 +107,9 @@ namespace Application.Service
 
             var car = new Car             
             {
-                LicensePlate = request.LicensePlate,
-                Brand = request.Brand,
-                Model = request.Model,
+                LicensePlate = TextNormalization.Normalization(request.LicensePlate),
+                Brand = TextNormalization.Normalization(request.Brand),
+                Model = TextNormalization.Normalization(request.Model),
                 YearOfManufacture = request.YearOfManufacture,
                 Km = request.Km,
                 DailyPriceUsd = request.DailyPriceUsd,
@@ -174,9 +175,9 @@ namespace Application.Service
                 throw new Exception("Status can only be 1 or 2");
             }
 
-            car.LicensePlate = request.LicensePlate;
-            car.Brand = request.Brand;
-            car.Model = request.Model;
+            car.LicensePlate = TextNormalization.Normalization(request.LicensePlate);
+            car.Brand = TextNormalization.Normalization(request.Brand);
+            car.Model = TextNormalization.Normalization(request.Model);
             car.YearOfManufacture = request.YearOfManufacture;
             car.Km = request.Km;
             car.DailyPriceUsd = request.DailyPriceUsd;

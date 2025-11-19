@@ -1,5 +1,6 @@
 ﻿using Application.Abstraction;
 using Application.Service;
+using Application.Service.Helpers.Normalitazion;
 using Application.Service.Helpers.Validations;
 using Contract.User.Request;
 using Contract.User.Response;
@@ -86,12 +87,12 @@ namespace Application.Service
 
             var user = new User
             {
-                Dni = request.Dni,
-                Name = request.Name,
-                Surname = request.Surname,
-                Email = request.Email,
+                Dni = TextNormalization.Normalization(request.Dni),
+                Name = TextNormalization.Normalization(request.Name),
+                Surname = TextNormalization.Normalization(request.Surname),
+                Email = TextNormalization.Normalization(request.Email),
                 Password = request.Password,
-                PhoneNumber = request.PhoneNumber,
+                PhoneNumber = TextNormalization.Normalization(request.PhoneNumber),
                 RoleId = request.RoleId
             };
 
@@ -134,12 +135,12 @@ namespace Application.Service
             // Verificar si el DNI ya existe en otro usuario ojo al piojo
 
             // Actualizar los campos
-            user.Dni = request.Dni;
-            user.Name = request.Name;
-            user.Surname = request.Surname;
-            user.Email = request.Email;
+            user.Dni = TextNormalization.Normalization(request.Dni);
+            user.Name = TextNormalization.Normalization(request.Name);
+            user.Surname = TextNormalization.Normalization(request.Surname);
+            user.Email = TextNormalization.Normalization(request.Email);
             user.Password = request.Password;
-            user.PhoneNumber = request.PhoneNumber;
+            user.PhoneNumber = TextNormalization.Normalization(request.PhoneNumber);
             user.RoleId = request.RoleId;
 
             user = await _userRepository.UpdateAsync(user);

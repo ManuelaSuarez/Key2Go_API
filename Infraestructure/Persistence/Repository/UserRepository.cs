@@ -16,7 +16,7 @@ namespace Infraestructure.Persistence.Repository
         {
             return await _context.Users
                 .Include(u => u.Role)
-                .FirstOrDefaultAsync(u => u.Email == email && u.Password == password);
+                .FirstOrDefaultAsync(u => u.Email == email && u.Password == password && u.IsActive);
         }
         public async Task<User?> GetByEmail(string email)
         {

@@ -18,6 +18,7 @@ namespace Api.Controllers
         }
 
         [HttpPost("login")]
+        [AllowAnonymous]
         public async Task<ActionResult<LoginResponse>> Login([FromBody] LoginRequest request)
         {
             var result = await _authenticationService.Login(request);

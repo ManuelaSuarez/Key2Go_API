@@ -5,14 +5,12 @@ using Domain.Entity;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-//PUT/api/account/update-profile
-//PUT/api/account/change-password
-
 
 namespace Presentation.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(Policy = nameof(RoleType.SuperAdmin))]
     public class UserController : ControllerBase
     {
         private readonly IUserService _userService;
@@ -23,7 +21,6 @@ namespace Presentation.Controllers
         }
 
         [HttpGet]
-        [Authorize(Policy = nameof(RoleType.Admin))]
         public async Task<ActionResult<List<UserResponse>>> GetAll()
         {
             var response = await _userService.GetAll();
@@ -36,7 +33,6 @@ namespace Presentation.Controllers
         }
 
         [HttpGet("{id}")]
-        [Authorize(Policy = nameof(RoleType.Admin))]
         public async Task<ActionResult<UserResponse>> GetById([FromRoute] int id)
         {
             var response = await _userService.GetById(id);
@@ -49,7 +45,6 @@ namespace Presentation.Controllers
         }
 
         [HttpPost]
-        [Authorize(Policy = nameof(RoleType.SuperAdmin))]
         public async Task<IActionResult> Create([FromBody] UserRequest request)
         {
             if (!ModelState.IsValid)
@@ -64,18 +59,16 @@ namespace Presentation.Controllers
         }
 
         [HttpDelete("{id}")]
-        [Authorize(Policy = nameof(RoleType.SuperAdmin))]
         public async Task<IActionResult> Delete(int id)
         {
             var result = await _userService.Delete(id);
             if (!result)
                 return NotFound("User not found");
 
-            return NoContent();
+            return Ok("User delete successfully");
         }
 
         [HttpPut("{id:int}")]
-        [Authorize(Policy = nameof(RoleType.SuperAdmin))]
         public async Task<IActionResult> Update(int id, [FromBody] UserRequest request)
         {
             if (!ModelState.IsValid)
@@ -88,5 +81,17 @@ namespace Presentation.Controllers
 
             return Ok(updated);
         }
+
+        [HttpPut("{id}/reactivate")]
+        public async Task<IActionResult> Reactivate(int id)
+        {
+            var reactivated = await _userService.ReactivateAsync(id);
+
+            if (!reactivated)
+                return NotFound("User not found");
+
+            return Ok("User reactivated successfully");
+        }
+
     }
 }

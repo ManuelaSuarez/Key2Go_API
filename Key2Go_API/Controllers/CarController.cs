@@ -21,6 +21,7 @@ namespace Presentation.Controllers
         }
 
         [HttpGet]
+        [AllowAnonymous]
         public async Task<ActionResult> GetAll()
         {
             var response = await _carService.GetAll();
@@ -32,6 +33,7 @@ namespace Presentation.Controllers
         }
 
         [HttpGet("{id:int}")]
+        [AllowAnonymous]
         public async Task<ActionResult> GetById([FromRoute] int id)
         {
             var response = await _carService.GetById(id);

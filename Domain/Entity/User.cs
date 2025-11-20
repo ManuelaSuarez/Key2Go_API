@@ -12,5 +12,7 @@
         //FK
         public int RoleId { get; set; } = 1;
         public Role Role { get; set; }
+
+        public bool IsActive { get; set; } = true;
     }
 }

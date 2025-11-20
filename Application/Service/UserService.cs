@@ -9,7 +9,7 @@ namespace Application.Service
 {
     public class UserService : IUserService
     {
-        private readonly IUserRepository _userRepository; 
+        private readonly IUserRepository _userRepository;
 
         public UserService(IUserRepository userRepository)
         {
@@ -27,7 +27,8 @@ namespace Application.Service
                     CompleteName = $"{u.Surname}, {u.Name}",
                     Email = u.Email,
                     PhoneNumber = u.PhoneNumber,
-                    RoleId = u.RoleId
+                    RoleId = u.RoleId,
+                    IsActive = u.IsActive
                 })
                 .ToList();
             return listUsers;
@@ -42,7 +43,8 @@ namespace Application.Service
                         CompleteName = $"{user.Surname}, {user.Name}",
                         Email = user.Email,
                         PhoneNumber = user.PhoneNumber,
-                        RoleId = user.RoleId
+                        RoleId = user.RoleId,
+                        IsActive = user.IsActive
                     } : null;
 
             return response;
@@ -104,18 +106,34 @@ namespace Application.Service
                 CompleteName = $"{user.Surname}, {user.Name}",
                 Email = user.Email,
                 PhoneNumber = user.PhoneNumber,
-                RoleId = user.RoleId
+                RoleId = user.RoleId,
+                IsActive = user.IsActive
             };
         }
 
         public async Task<bool> Delete(int id)
         {
-            var entity = await _userRepository.GetByIdAsync(id);
-            if (entity == null)
+            var user = await _userRepository.GetByIdAsync(id);
+            if (user == null)
             {
                 return false;
             }
-            await _userRepository.DeleteAsync(entity);
+            user.IsActive = false;
+            await _userRepository.UpdateAsync(user);
+
+            return true;
+        }
+
+
+        public async Task<bool> ReactivateAsync(int id)
+        {
+            var user = await _userRepository.GetByIdAsync(id);
+            if (user == null)
+            {
+                return false;
+            }
+            user.IsActive = true;
+            await _userRepository.UpdateAsync(user);
 
             return true;
         }
@@ -174,7 +192,8 @@ namespace Application.Service
                 CompleteName = $"{user.Surname}, {user.Name}",
                 Email = user.Email,
                 PhoneNumber = user.PhoneNumber,
-                RoleId = user.RoleId
+                RoleId = user.RoleId,
+                IsActive = user.IsActive
             };
         }
 

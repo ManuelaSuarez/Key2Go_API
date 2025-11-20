@@ -25,7 +25,8 @@ namespace Application.Service
                         CompleteName = $"{user.Surname}, {user.Name}",
                         Email = user.Email,
                         PhoneNumber = user.PhoneNumber,
-                        RoleId = user.RoleId
+                        RoleId = user.RoleId,
+                        IsActive = user.IsActive
                     } : null;
 
             return response;

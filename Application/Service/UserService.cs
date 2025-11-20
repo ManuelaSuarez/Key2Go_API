@@ -1,5 +1,4 @@
 ﻿using Application.Abstraction;
-using Application.Service;
 using Application.Service.Helpers.Normalitazion;
 using Application.Service.Helpers.Validations;
 using Contract.User.Request;
@@ -127,14 +126,37 @@ namespace Application.Service
             if (user == null)
                 return null;
 
-            // Verificar si el email ya existe en otro usuario
             var existingUser = await _userRepository.GetByEmail(request.Email);
             if (existingUser != null && existingUser.Id != id)
                 return null;
 
-            // Verificar si el DNI ya existe en otro usuario ojo al piojo
+            var existingDniUser = await _userRepository.GetByDni(request.Dni);
+            if (existingDniUser != null && existingDniUser.Id != id)
+            {
+                throw new Exception($"User with DNI {request.Dni} already exists");
+            }
 
-            // Actualizar los campos
+            if (!(UserValidations.DniValidation(request.Dni)))
+            {
+                throw new Exception("invalid DNI format");
+            }
+            if (!(UserValidations.EmailValidation(request.Email)))
+            {
+                throw new Exception("invalid Email format");
+            }
+            if (!(UserValidations.PasswordValidation(request.Password)))
+            {
+                throw new Exception("Your password must be at least 8 characters long and include at least one uppercase letter, one lowercase letter, one number, and one special character.");
+            }
+            if (!(UserValidations.PhoneNumberValidation(request.PhoneNumber)))
+            {
+                throw new Exception("invalid phonenumber format");
+            }
+            if (!(UserValidations.RoleValidation(request.RoleId)))
+            {
+                throw new Exception("Role can only be 1, 2 or 3");
+            }
+
             user.Dni = TextNormalization.Normalization(request.Dni);
             user.Name = TextNormalization.Normalization(request.Name);
             user.Surname = TextNormalization.Normalization(request.Surname);

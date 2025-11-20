@@ -153,6 +153,13 @@ namespace Application.Service
                 return null;
             }
 
+            var existingLicensePlate = await _carRepository.GetByLicensePlate(request.LicensePlate);
+            if (existingLicensePlate != null && existingLicensePlate.Id != id)
+            {
+                throw new Exception($"Car with license plate {request.LicensePlate} already exists");
+            }
+
+
             if (!(CarValidations.LicensePlateValidation(request.LicensePlate)))
             {
                 throw new Exception("invalid License Plate format");

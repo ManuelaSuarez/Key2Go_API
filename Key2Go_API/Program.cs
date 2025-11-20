@@ -96,6 +96,7 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ICarService, CarService>();
 builder.Services.AddScoped<ITripService, TripService>();
 builder.Services.AddScoped<IPaymentService, PaymentService>();
+builder.Services.AddScoped<IAccountService, AccountService>();
 
 //EXTERNAL SERVICES
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();

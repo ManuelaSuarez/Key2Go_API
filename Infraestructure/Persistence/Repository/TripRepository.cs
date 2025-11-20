@@ -25,5 +25,12 @@ namespace Infraestructure.Persistence.Repository
                 .Where(t => (int)t.CarId == carId)
                 .ToListAsync();
         }
+        public async Task<List<Trip>> GetByUserIdAsync(int userId)
+        {
+            return await _context.Trips
+                .Where(t => t.UserId == userId)
+                .ToListAsync();
+        }
+
     }
 }

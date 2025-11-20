@@ -6,5 +6,6 @@ namespace Application.Abstraction
     {
         Task<List<Trip>> GetByStatusAsync(int status);
         Task<List<Trip>> GetByCarIdAsync(int carId);
+        Task<List<Trip>> GetByUserIdAsync(int userId);
     }
 }

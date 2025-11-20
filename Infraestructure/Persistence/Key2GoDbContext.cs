@@ -26,9 +26,9 @@ namespace Infraestructure.Persistence
             );
 
             modelBuilder.Entity<User>().HasData(
-                new User { Id = 1, Dni = "41111111", Name = "User", Surname = "User", Email = "user@mail.com", Password = "user", PhoneNumber = "341111111", RoleId = (int)RoleType.User },
-                new User { Id = 2, Dni = "42222222", Name = "Admin", Surname = "Admin", Email = "admin@mail.com", Password = "admin", PhoneNumber = "342222222", RoleId = (int)RoleType.Admin },
-                new User { Id = 3, Dni = "43333333", Name = "Super", Surname = "Admin", Email = "superadmin@mail.com", Password = "superadmin", PhoneNumber = "343333333", RoleId = (int)RoleType.SuperAdmin }
+                new User { Id = 1, Dni = "41111111", Name = "User", Surname = "User", Email = "user@mail.com", Password = "User2025?", PhoneNumber = "341111111", RoleId = (int)RoleType.User },
+                new User { Id = 2, Dni = "42222222", Name = "Admin", Surname = "Admin", Email = "admin@mail.com", Password = "Admin2025?", PhoneNumber = "342222222", RoleId = (int)RoleType.Admin },
+                new User { Id = 3, Dni = "43333333", Name = "Super", Surname = "Admin", Email = "superadmin@mail.com", Password = "Superadmin2025?", PhoneNumber = "343333333", RoleId = (int)RoleType.SuperAdmin }
             );
 
             modelBuilder.Entity<Car>().HasData(

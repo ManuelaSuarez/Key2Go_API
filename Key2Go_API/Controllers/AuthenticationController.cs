@@ -1,6 +1,8 @@
 ﻿using Application.Abstraction.ExternalService;
-using Contract.External.Auth.Response;
 using Contract.External.Auth.Request;
+using Contract.External.Auth.Response;
+using Contract.User.Response;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers
@@ -16,16 +18,31 @@ namespace Api.Controllers
         }
 
         [HttpPost("login")]
-        public async Task<ActionResult<string>> Login([FromBody] LoginRequest request)
+        public async Task<ActionResult<LoginResponse>> Login([FromBody] LoginRequest request)
         {
-            var response = new LoginResponse();
-            var token = await _authenticationService.Login(request);
+            var result = await _authenticationService.Login(request);
 
-            if (string.IsNullOrEmpty(token))
+            if (result == null || string.IsNullOrEmpty(result.Token))
             {
-                return Unauthorized(response.Message);
+                return Unauthorized("Credenciales inválidas.");
             }
-            return Ok(token);
+
+            return Ok(result);
+        }
+
+        [HttpPost("register")]
+        [AllowAnonymous]
+        public async Task<ActionResult<RegisterResponse>> Register([FromBody] RegisterRequest request)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var result = await _authenticationService.Register(request);
+
+            if (result == null)
+                return BadRequest("Email already in use");
+
+            return Ok(result);
         }
     }
 }

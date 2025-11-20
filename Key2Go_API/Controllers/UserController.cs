@@ -5,6 +5,10 @@ using Domain.Entity;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
+//PUT/api/account/update-profile
+//PUT/api/account/change-password
+
+
 namespace Presentation.Controllers
 {
     [Route("api/[controller]")]

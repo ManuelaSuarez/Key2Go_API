@@ -1,9 +1,11 @@
 ﻿using Contract.External.Auth.Request;
+using Contract.External.Auth.Response;
 
 namespace Application.Abstraction.ExternalService
 {
     public interface IAuthenticationService
     {
-        Task<string> Login(LoginRequest request);
+        Task<LoginResponse> Login(LoginRequest request);
+        Task<RegisterResponse> Register(RegisterRequest request);
     }
 }

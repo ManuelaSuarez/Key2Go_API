@@ -10,10 +10,11 @@ namespace Application.Service
 
         Task<List<TripResponse>> GetAll();
         Task<TripResponse?> GetById(int id);
+        Task<TripResponse?> AdminCreate(AdminTripRequest request);
         Task<TripResponse?> Create(int userId, TripRequest request);
         Task<bool> Delete(int id);
-        Task<TripResponse?> Update(int id, TripUpdate request);
-
+        Task<TripResponse?> AdminUpdate(int id, AdminTripUpdate request);
+        Task<TripResponse?> Update(int id, int userId, TripUpdate request);
         Task<bool> CancelTrip(int id);
         Task<bool> StartTrip(int id);
         Task<bool> FinishTrip(int id, int finalKm);

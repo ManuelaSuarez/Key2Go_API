@@ -110,6 +110,76 @@ namespace Application.Service
             return response;
         }
 
+        public async Task<TripResponse?> AdminCreate(AdminTripRequest request)
+        {
+            if (!TripValidations.ReservationNumberValidation(request.ReservationNumber))
+            {
+                throw new Exception("Reservation number must be greater than zero.");
+            }
+            if (!TripValidations.StartDateValidation(request.StartDate))
+            {
+                throw new Exception("Start date must be equal or greater than today.");
+            }
+
+            if (!TripValidations.EndDateValidation(request.StartDate, request.EndDate))
+            {
+                throw new Exception("End date must be equal or greater than start date.");
+            }
+
+            var user = await _userRepository.GetByIdAsync(request.UserId);
+            if (user == null)
+            {
+                throw new Exception("The user does not exist.");
+            }
+
+            var car = await _carRepository.GetByIdAsync(request.CarId);
+            if (car == null)
+            {
+                throw new Exception("The car does not exist.");
+            }
+
+            bool isAvailable = await _carService.IsCarAvailable(
+                request.CarId,
+                request.StartDate,
+                request.EndDate
+            );
+
+            if (!isAvailable)
+                throw new Exception("The selected car is not available for the selected dates.");
+
+            var trip = new Trip
+            {
+                ReservationNumber = request.ReservationNumber,
+                CreationDate = DateTime.UtcNow,
+                StartDate = request.StartDate,
+                EndDate = request.EndDate,
+                Status = TripStatus.Pending,
+                UserId = request.UserId,
+                CarId = request.CarId
+            };
+
+            if (!Enum.IsDefined(typeof(PaymentMethod), request.PaymentMethod))
+                throw new Exception("Payment method not valid.");
+
+            trip = await _tripRepository.CreateAsync(trip);
+
+            await _paymentService.Create(trip.Id, (PaymentMethod)request.PaymentMethod);
+
+            return new TripResponse
+            {
+                Id = trip.Id,
+                ReservationNumber = trip.ReservationNumber,
+                CreationDate = trip.CreationDate,
+                StartDate = trip.StartDate,
+                EndDate = trip.EndDate,
+                InitialKm = trip.InitialKm,
+                FinalKm = trip.FinalKm,
+                Status = (int)trip.Status,
+                UserId = trip.UserId,
+                CarId = trip.CarId
+            };
+        }
+
         public async Task<TripResponse?> Create(int userId, TripRequest request)
         {
             if(!TripValidations.ReservationNumberValidation(request.ReservationNumber))
@@ -194,7 +264,7 @@ namespace Application.Service
             return true;
         }
 
-        public async Task<TripResponse?> Update(int id, TripUpdate request)
+        public async Task<TripResponse?> AdminUpdate(int id, AdminTripUpdate request)
         {
             var trip = await _tripRepository.GetByIdAsync(id);
 
@@ -261,6 +331,87 @@ namespace Application.Service
             trip.UserId = request.UserId;
             trip.CarId = request.CarId;
                 
+            await _tripRepository.UpdateAsync(trip);
+
+            if (datesChanged || carChanged)
+            {
+                await _paymentService.UpdateForTrip(trip.Id);
+            }
+
+            return new TripResponse
+            {
+                Id = trip.Id,
+                ReservationNumber = trip.ReservationNumber,
+                CreationDate = trip.CreationDate,
+                StartDate = trip.StartDate,
+                EndDate = trip.EndDate,
+                InitialKm = trip.InitialKm,
+                FinalKm = trip.FinalKm,
+                Status = (int)trip.Status,
+                UserId = trip.UserId,
+                CarId = trip.CarId
+            };
+        }
+
+        public async Task<TripResponse?> Update(int id, int userId, TripUpdate request)
+        {
+            var trip = await _tripRepository.GetByIdAsync(id);
+            if (trip == null)
+            {
+                return null;
+            }
+
+            var user = await _userRepository.GetByIdAsync(userId);
+            if (user == null)
+            {
+                throw new Exception("The user does not exist.");
+            }
+
+            var tripStatus = (int)trip.Status;
+            if (tripStatus != 1)
+            {
+                throw new Exception("You can only edit pending trips.");
+            }
+
+            if (!TripValidations.StartDateValidation(request.StartDate))
+            {
+                throw new Exception("Start date must be equal or greater than today.");
+            }
+
+            if (!TripValidations.EndDateValidation(request.StartDate, request.EndDate))
+            {
+                throw new Exception("End date must be equal or greater than start date.");
+            }
+
+            var car = await _carRepository.GetByIdAsync(request.CarId);
+            if (car == null)
+            {
+                throw new Exception("The car does not exist.");
+            }
+
+            bool datesChanged =
+                trip.StartDate != request.StartDate ||
+                trip.EndDate != request.EndDate;
+
+            bool carChanged = trip.CarId != request.CarId;
+
+            if (datesChanged || carChanged)
+            {
+                bool available = await _carService.IsCarAvailable(
+                    request.CarId,
+                    request.StartDate,
+                    request.EndDate,
+                    currentTripId: trip.Id
+                );
+
+                if (!available)
+                    throw new Exception("The selected car is not available for the selected dates.");
+            }
+
+            trip.StartDate = request.StartDate;
+            trip.EndDate = request.EndDate;
+            trip.CarId = request.CarId;
+
             await _tripRepository.UpdateAsync(trip);
 
             if (datesChanged || carChanged)

@@ -6,8 +6,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
-//ver si agregamos otro controlador para la creacion de trips ADMIN
-
 namespace Presentation.Controllers
 {
     [Route("api/[Controller]")]
@@ -39,11 +37,11 @@ namespace Presentation.Controllers
 
         [HttpGet("my/{id}")]
         [Authorize(Policy = nameof(RoleType.User))]
-        public async Task<ActionResult<TripResponse>> GetMyTripbyId([FromRoute] int tripId)
+        public async Task<ActionResult<TripResponse>> GetMyTripbyId([FromRoute] int id)
         {
             var currentUserId = GetCurrentUserId();
 
-            var response = await _tripService.GetByUserId(tripId, currentUserId);
+            var response = await _tripService.GetByUserId(id, currentUserId);
 
             if (response == null)
             {
@@ -81,6 +79,21 @@ namespace Presentation.Controllers
         }
 
         [HttpPost]
+        [Authorize(Policy = nameof(RoleType.Admin))]
+        public async Task<IActionResult> AdminCreate([FromBody] AdminTripRequest request)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var result = await _tripService.AdminCreate(request);
+
+            if (result == null)
+                return BadRequest("Could not create trip");
+
+            return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
+        }
+
+        [HttpPost("reserve")]
         [Authorize(Policy = nameof(RoleType.User))]
         public async Task<IActionResult> Create([FromBody] TripRequest request)
         {
@@ -109,13 +122,13 @@ namespace Presentation.Controllers
         }
 
         [HttpPut("{id:int}")]
-        [Authorize(Policy = nameof(RoleType.User))]
-        public async Task<IActionResult> Update(int id, [FromBody] TripUpdate request)
+        [Authorize(Policy = nameof(RoleType.Admin))]
+        public async Task<IActionResult> AdminUpdate(int id, [FromBody] AdminTripUpdate request)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var updated = await _tripService.Update(id, request);
+            var updated = await _tripService.AdminUpdate(id, request);
 
             if (updated is null)
                 return NotFound("Trip not found");
@@ -123,6 +136,22 @@ namespace Presentation.Controllers
             return Ok(updated);
         }
 
+        [HttpPut("modify/{id:int}")]
+        [Authorize(Policy = nameof(RoleType.User))]
+        public async Task<IActionResult> Update(int id, [FromBody]TripUpdate request)
+        {
+            var currentUserId = GetCurrentUserId();
+            
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var updated = await _tripService.Update(id, currentUserId, request);
+
+            if (updated is null)
+                return NotFound("Trip not found");
+
+            return Ok(updated);
+        }
 
         [HttpPut("{id}/cancel")]
         [Authorize(Policy = nameof(RoleType.User))]

@@ -27,7 +27,7 @@ jobs:
         run: dotnet build ./Key2Go_API/Key2Go_API.sln --configuration Release
 
       - name: dotnet publish
-        run: dotnet publish ./Key2Go_API/Presentation/Presentation.csproj -c Release -o ./publish
+        run: dotnet publish ./Key2Go_API/Key2Go_API/Presentation.csproj -c Release -o ./publish
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
@@ -64,3 +64,4 @@ jobs:
           package: .
 
           
+

@@ -112,10 +112,7 @@ namespace Application.Service
 
         public async Task<TripResponse?> AdminCreate(AdminTripRequest request)
         {
-            if (!TripValidations.ReservationNumberValidation(request.ReservationNumber))
-            {
-                throw new Exception("Reservation number must be greater than zero.");
-            }
+
             if (!TripValidations.StartDateValidation(request.StartDate))
             {
                 throw new Exception("Start date must be equal or greater than today.");
@@ -149,7 +146,7 @@ namespace Application.Service
 
             var trip = new Trip
             {
-                ReservationNumber = request.ReservationNumber,
+                ReservationNumber = GenerateReservationNumber(),
                 CreationDate = DateTime.UtcNow,
                 StartDate = request.StartDate,
                 EndDate = request.EndDate,
@@ -182,10 +179,7 @@ namespace Application.Service
 
         public async Task<TripResponse?> Create(int userId, TripRequest request)
         {
-            if(!TripValidations.ReservationNumberValidation(request.ReservationNumber))
-            {
-                throw new Exception("Reservation number must be greater than zero.");
-            }
+
             if (!TripValidations.StartDateValidation(request.StartDate))
             {
                 throw new Exception("Start date must be equal or greater than today.");
@@ -219,7 +213,7 @@ namespace Application.Service
 
             var trip = new Trip
             {
-                ReservationNumber = request.ReservationNumber,
+                ReservationNumber = GenerateReservationNumber(),
                 CreationDate = DateTime.UtcNow,
                 StartDate = request.StartDate,
                 EndDate = request.EndDate,
@@ -280,10 +274,6 @@ namespace Application.Service
                 throw new Exception("You can only edit pending trips.");
             }
 
-            if (!TripValidations.ReservationNumberValidation(request.ReservationNumber))
-            {
-                throw new Exception("Reservation number must be greater than zero.");
-            }
             if (!TripValidations.StartDateValidation(request.StartDate))
             {
                 throw new Exception("Start date must be equal or greater than today.");
@@ -325,7 +315,6 @@ namespace Application.Service
                     throw new Exception("The selected car is not available for the selected dates.");
             }
 
-            trip.ReservationNumber = request.ReservationNumber;
             trip.StartDate = request.StartDate;
             trip.EndDate = request.EndDate;
             trip.UserId = request.UserId;
@@ -523,6 +512,11 @@ namespace Application.Service
                 })
                 .ToList();
             return listTrips;
+        }
+
+        private static int GenerateReservationNumber()
+        {
+            return new Random().Next(100000, 999999);
         }
     }
 }
